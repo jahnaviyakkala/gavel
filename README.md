@@ -37,6 +37,8 @@ Plaintext
 
 ## Upcoming Features (Roadmap)
 
+    Flash deals for faster sale.
+    
     Popcorn Bidding: Automatic auction extension if a bid is placed in the final seconds to prevent "sniping."
 
     Provenance Tracking: A blockchain-inspired history of ownership for every item sold on the platform.
