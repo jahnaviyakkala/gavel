@@ -209,14 +209,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. Load market data
     try {
-        const response = await fetch('/api/auctions');
-        const auctions = await response.json();
         let itemData;
         
-        // Find by either ID or title (for backwards compatibility)
         if (urlParams.has('id')) {
-            itemData = auctions.find(a => String(a._id) === itemId || String(a.id) === itemId);
+            const detailRes = await fetch(`/api/auction/${itemId}`);
+            if (detailRes.ok) {
+                itemData = await detailRes.json();
+            }
         } else {
+            const [activeResponse, closedResponse] = await Promise.all([
+                fetch('/api/auctions'),
+                fetch('/api/auctions/closed')
+            ]);
+            const auctions = [
+                ...(activeResponse.ok ? await activeResponse.json() : []),
+                ...(closedResponse.ok ? await closedResponse.json() : [])
+            ];
             itemData = auctions.find(a => a.title === decodeURIComponent(itemId));
         }
 
@@ -305,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             bidFormArea.innerHTML = `
                 <div class="input-with-label" style="margin-bottom: 12px;">
                     <span>₹</span>
-                    <input type="number" id="bid-amount" class="form-control" min="${itemData.currentBid + Math.max(1, Math.round(itemData.increment || 1))}" step="1" placeholder="Enter trade amount" style="font-size: 1.25rem; font-weight: 600;">
+                    <input type="number" id="bid-amount" class="form-control" min="${itemData.currentBid + 1}" step="1" placeholder="Enter trade amount" style="font-size: 1.25rem; font-weight: 600;">
                 </div>
                 <!-- Quick Bid Buttons -->
                 <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
@@ -323,7 +331,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btn.addEventListener('click', () => {
                     const addAmount = Number(btn.getAttribute('data-add'));
                     const bidInput = document.getElementById('bid-amount');
-                    const currentVal = Number(bidInput.value) || itemData.currentBid;
+                    const liveBid = Number(String(document.getElementById('display-price').textContent || '0').replace(/,/g, '')) || itemData.currentBid;
+                    const currentVal = Number(bidInput.value) || liveBid;
                     bidInput.value = currentVal + addAmount;
                 });
             });
@@ -333,9 +342,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const autoBidCheck = document.getElementById('auto-bid-check');
                 const bidAmount = Number(bidInput.value);
                 const isAuto = autoBidCheck.checked;
+                const liveBid = Number(String(document.getElementById('display-price').textContent || '0').replace(/,/g, '')) || itemData.currentBid;
                 
                 if (!Number.isInteger(bidAmount)) { alert("Bid amount must be in whole rupees only."); return; }
-                if (!bidAmount || bidAmount < itemData.currentBid + Math.max(1, Math.round(itemData.increment || 1))) { alert(`Enter at least ₹${(itemData.currentBid + Math.max(1, Math.round(itemData.increment || 1))).toLocaleString('en-IN')}`); return; }
+                if (!bidAmount || bidAmount <= liveBid) { alert(`Enter more than ₹${liveBid.toLocaleString('en-IN')}`); return; }
 
                 try {
                     const res = await fetch('/api/place-bid', {
@@ -412,6 +422,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (msg.type === 'spectator_count') {
                 document.getElementById('spectator-count').textContent = msg.count;
             } else if (msg.type === 'auction_closed' && msg.itemId === window.currentItemId) {
+                document.getElementById('market-timer').textContent = 'Ended';
+                document.getElementById('market-status-badge').innerHTML = 'Closed Market';
+                const bidFormArea = document.getElementById('bid-form-area');
+                if (bidFormArea) {
+                    bidFormArea.innerHTML = `
+                        <div class="login-to-bid" style="border-color:var(--border-color); background:var(--bg-main);">
+                            <p>This market has closed.</p>
+                        </div>`;
+                }
             }
         });
 

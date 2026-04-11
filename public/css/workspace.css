@@ -27,6 +27,11 @@ body.workspace-mode {
         linear-gradient(180deg, #09111e 0%, #0d1729 50%, #111c31 100%);
 }
 
+body.workspace-mode .workspace-button {
+    background: linear-gradient(135deg, #f4d79c, #a7c2e5);
+    box-shadow: 0 14px 28px rgba(167, 194, 229, 0.18);
+}
+
 body.workspace-mode.has-app-sidebar .workspace-shell {
     max-width: none;
     margin: 0;

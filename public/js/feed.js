@@ -25,7 +25,7 @@ const Feed = {
             ${item.hotLabel ? `<div class="short-live-badge" style="top:58px; background:rgba(174,36,72,0.14); color:#ffd7df; border-color:rgba(174,36,72,0.35);">${item.hotLabel}</div>` : ''}
             <button class="heart-btn" onclick="toggleCardWatchlist(event, '${item.id}', this)" title="${isWatched ? 'Remove Watchlist' : 'Add Watchlist'}" style="color:${isWatched ? 'var(--accent-blue)' : 'rgba(255,255,255,0.6)'}">★</button>
             ${hasVideo
-                ? `<video class="short-video" src="${item.videoUrl}" muted loop playsinline preload="metadata"></video>`
+                ? `<video class="short-video" src="${item.videoUrl}" poster="${item.image || ''}" muted loop playsinline preload="metadata"></video>`
                 : `<img class="short-media" src="${item.image}" alt="${item.title}" loading="lazy">`
             }
             <div class="short-overlay">

@@ -8,10 +8,10 @@
     };
 
     const viewMeta = {
-        overview: { title: 'One place for your marketplace activity.', copy: 'Listings, bids, messages, and review stay separated but connected.' },
-        listings: { title: 'Your listings.', copy: 'Track submissions, live lots, and fixes in one view.' },
-        bids: { title: 'Your bids.', copy: 'Keep buyer activity clear and separate from selling.' },
-        watchlist: { title: 'Your watchlist.', copy: 'Saved lots, ready when you want to bid.' },
+        overview: { title: 'Dashboard.', copy: 'Your key buying and selling activity in one place.' },
+        listings: { title: 'Listings.', copy: 'Track submissions, live lots, and fixes.' },
+        bids: { title: 'Bids.', copy: 'Your buyer activity, clearly separated.' },
+        watchlist: { title: 'Watchlist.', copy: 'Saved lots, ready when you want to bid.' },
         messages: { title: 'Your messages.', copy: 'Conversations with buyers and sellers.' },
         notifications: { title: 'Your updates.', copy: 'Approvals, assignments, and account notices.' },
         review: { title: 'Assigned review queue.', copy: 'Approve or reject requests with clear notes.' },
@@ -83,9 +83,7 @@
             { key: 'overview', label: 'Overview', href: '/workspace/' },
             { key: 'listings', label: 'Listings', href: '/workspace/listings.html' },
             { key: 'bids', label: 'Bids', href: '/workspace/bids.html' },
-            { key: 'watchlist', label: 'Watchlist', href: '/workspace/watchlist.html' },
-            { key: 'messages', label: 'Messages', href: '/workspace/messages.html' },
-            { key: 'notifications', label: 'Notifications', href: '/workspace/notifications.html' }
+            { key: 'watchlist', label: 'Watchlist', href: '/workspace/watchlist.html' }
         ];
 
         if (user.isAdmin) {
@@ -192,20 +190,16 @@
         return '' +
             '<div class="workspace-grid">' +
                 '<section class="workspace-panel workspace-col-8">' +
-                    '<div class="workspace-panel-header"><div><h2 class="workspace-section-title">At a glance</h2><p class="workspace-section-subtitle">Your key activity in one view.</p></div></div>' +
+                    '<div class="workspace-panel-header"><div><h2 class="workspace-section-title">Listings Snapshot</h2><p class="workspace-section-subtitle">Only the essentials.</p></div></div>' +
                     renderListings((state.summary.listings || []).slice(0, 5)) +
                 '</section>' +
                 '<section class="workspace-panel workspace-col-4">' +
-                    '<div class="workspace-panel-header"><div><h2 class="workspace-section-title">Messages</h2><p class="workspace-section-subtitle">Latest conversations.</p></div></div>' +
-                    renderChats((state.chats || []).slice(0, 4)) +
-                '</section>' +
-                '<section class="workspace-panel workspace-col-6">' +
                     '<div class="workspace-panel-header"><div><h2 class="workspace-section-title">Watchlist</h2><p class="workspace-section-subtitle">Saved lots.</p></div></div>' +
                     renderWatchlist((state.summary.watchlist || []).slice(0, 4)) +
                 '</section>' +
-                '<section class="workspace-panel workspace-col-6">' +
-                    '<div class="workspace-panel-header"><div><h2 class="workspace-section-title">Notifications</h2><p class="workspace-section-subtitle">Recent updates.</p></div></div>' +
-                    renderNotifications((state.summary.notifications || []).slice(0, 4)) +
+                '<section class="workspace-panel workspace-col-12">' +
+                    '<div class="workspace-panel-header"><div><h2 class="workspace-section-title">Inbox</h2><p class="workspace-section-subtitle">Messages and notifications live here.</p></div></div>' +
+                    renderInboxLinks() +
                 '</section>' +
             '</div>';
     }
@@ -298,6 +292,21 @@
                 '<div class="workspace-actions"><a class="workspace-inline-button" href="/chat.html?auction=' + encodeURIComponent(item.auctionId) + '&with=' + encodeURIComponent(item.otherEmail || '') + '">Open Messages</a></div>' +
             '</article>';
         }).join('') + '</div>';
+    }
+
+    function renderInboxLinks() {
+        return '<div class="workspace-list">' +
+            '<article class="workspace-card">' +
+                '<span class="workspace-item-title">Messages</span>' +
+                '<div class="workspace-item-meta">See product conversations only.</div>' +
+                '<div class="workspace-actions"><a class="workspace-inline-button" href="/workspace/messages.html">Open Messages</a></div>' +
+            '</article>' +
+            '<article class="workspace-card">' +
+                '<span class="workspace-item-title">Notifications</span>' +
+                '<div class="workspace-item-meta">Approvals, rejections, and account updates.</div>' +
+                '<div class="workspace-actions"><a class="workspace-inline-button" href="/workspace/notifications.html">Open Notifications</a></div>' +
+            '</article>' +
+        '</div>';
     }
 
     function renderReviewQueue(items) {
@@ -546,7 +555,7 @@
         return {
             label: 'Marketplace status',
             title: 'Seller and bidder activity now has cleaner separation.',
-            copy: 'You can move through listings, bids, watchlist, and messages as separate pages from the same workspace chrome.',
+            copy: 'Use the dashboard for core activity and open inbox pages only when needed.',
             value: formatCurrency(summary.stats.totalVolume || 0),
             footnote: String(summary.stats.platformUsers || 0) + ' users and ' + String(summary.stats.activeAuctions || 0) + ' active auctions on the platform.'
         };

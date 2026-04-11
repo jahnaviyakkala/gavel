@@ -1201,18 +1201,11 @@ async function resolveAutoBids(auctionId) {
     let winner = null;
 
     if (highest.maxAmount > secondHighest.maxAmount) {
-        // Winner is highest, price is secondHighest + increment
-        finalAmount = Math.min(secondHighest.maxAmount + (auction.increment || 100), highest.maxAmount);
-        winner = highest;
-        // The second highest is now outbid and inactive
-        secondHighest.active = false;
-        await secondHighest.save();
-    } else {
-        // It's a tie. The earlier bidder usually wins, but for simplicity we'll take the first in DB
         finalAmount = highest.maxAmount;
         winner = highest;
-        secondHighest.active = false;
-        await secondHighest.save();
+    } else {
+        finalAmount = highest.maxAmount;
+        winner = highest;
     }
 
     if (finalAmount > auction.currentBid) {
@@ -1242,6 +1235,10 @@ app.post('/api/bids/auto-bid', requireLogin, async (req, res) => {
     try {
         const item = await Auction.findById(listingId);
         if (!item || item.status === 'closed') return res.status(400).json({ success: false, message: 'Invalid or closed auction.' });
+        if (item.sellerEmail === req.user.email) return res.status(403).json({ success: false, message: 'You cannot bid on your own listing.' });
+        if (!Number.isInteger(Number(maxAmount)) || Number(maxAmount) <= Number(item.currentBid || 0)) {
+            return res.status(400).json({ success: false, message: `Auto-bid max must be higher than ₹${Number(item.currentBid || 0).toLocaleString('en-IN')}.` });
+        }
 
         await AutoBid.findOneAndUpdate(
             { auctionId: item._id, bidderEmail: req.user.email },
@@ -1285,13 +1282,17 @@ async function handlePlaceBid(req, res) {
             return res.status(400).json({ success: false, message: 'Bid amount must be in whole rupees only.' });
         }
 
-        const minIncrement = Math.max(1, Math.round(item.increment || 1));
-        const minimumAllowedBid = item.currentBid + minIncrement;
-        if (amount < minimumAllowedBid) {
+        if (amount <= item.currentBid) {
             return res.status(400).json({
                 success: false,
-                message: `Bid must be at least ₹${minimumAllowedBid.toLocaleString('en-IN')} (minimum increment ₹${minIncrement.toLocaleString('en-IN')}).`
+                message: `Bid must be higher than ₹${item.currentBid.toLocaleString('en-IN')}.`
             });
+        }
+
+        const latestBid = await Bid.findOne({ auctionId: item._id }).sort({ placedAt: -1 });
+        const isCurrentLeader = latestBid && latestBid.bidderEmail === req.user.email && latestBid.amount === item.currentBid;
+        if (isCurrentLeader && !isAuto) {
+            return res.status(400).json({ success: false, message: 'You already hold the top bid on this item.' });
         }
 
         const dbUser = await User.findOne({ email: req.user.email });

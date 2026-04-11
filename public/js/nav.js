@@ -3,6 +3,26 @@
  * Replaces legacy top nav on static pages.
  */
 (async function initSidebar() {
+    document.body.classList.add('page-transition-ready');
+
+    document.addEventListener('click', function(event) {
+        const anchor = event.target.closest('a[href]');
+        if (!anchor) return;
+        const href = anchor.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('javascript:')) return;
+        if (anchor.target === '_blank' || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (href.startsWith('http') && !href.startsWith(window.location.origin)) return;
+
+        const nextUrl = new URL(href, window.location.origin);
+        if (nextUrl.origin !== window.location.origin || nextUrl.href === window.location.href) return;
+
+        event.preventDefault();
+        document.body.classList.add('page-transition-leaving');
+        window.setTimeout(function() {
+            window.location.href = nextUrl.href;
+        }, 140);
+    });
+
     function clearBrowserAuthState() {
         try {
             [window.localStorage, window.sessionStorage].forEach((store) => {

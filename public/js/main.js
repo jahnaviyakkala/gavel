@@ -379,7 +379,7 @@ function renderDetailPanel(item, container) {
                 <div class="form-group" style="background:var(--bg-card); padding:25px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:25px;">
                     <label style="display:block; font-size:0.85rem; font-weight:700; margin-bottom:10px;">PLACE A TRADE LIMIT</label>
                     <div style="display:flex; gap:10px;">
-                        <input type="number" id="detail-bid-input" min="${item.currentBid + Math.max(1, Math.round(item.increment || 1))}" step="1" placeholder="₹${(item.currentBid + Math.max(1, Math.round(item.increment || 1))).toLocaleString('en-IN')} or more" class="form-control" style="flex:1;">
+                        <input type="number" id="detail-bid-input" min="${item.currentBid + 1}" step="1" placeholder="₹${(item.currentBid + 1).toLocaleString('en-IN')} or more" class="form-control" style="flex:1;">
                         <button onclick="placeDetailBid('${item.id}')" class="btn-primary" style="padding:0 25px; white-space:nowrap;">Execute Trade</button>
                     </div>
                     <p id="detail-bid-msg" style="margin-top:10px; font-size:0.85rem; display:none;"></p>
@@ -452,6 +452,8 @@ window.placeDetailBid = async function(auctionId) {
     const msgEl = document.getElementById('detail-bid-msg');
     const amount = Number(input?.value);
 
+    const currentItem = allAuctionsData.find((entry) => entry.id === auctionId);
+
     if (!amount || amount <= 0) {
         msgEl.textContent = 'Enter a valid amount limit.';
         msgEl.style.color = 'var(--neon-red)';
@@ -460,6 +462,12 @@ window.placeDetailBid = async function(auctionId) {
     }
     if (!Number.isInteger(amount)) {
         msgEl.textContent = 'Trade amount must be in whole rupees only.';
+        msgEl.style.color = 'var(--neon-red)';
+        msgEl.style.display = 'block';
+        return;
+    }
+    if (currentItem && amount <= Number(currentItem.currentBid || 0)) {
+        msgEl.textContent = `Enter more than ₹${Number(currentItem.currentBid || 0).toLocaleString('en-IN')}.`;
         msgEl.style.color = 'var(--neon-red)';
         msgEl.style.display = 'block';
         return;

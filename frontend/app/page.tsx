@@ -27,6 +27,8 @@ interface ReelItem {
   verified: boolean;
   live: boolean;
   image: string;
+  video?: string;
+  category?: string;
 }
 
 export default function Home() {
@@ -62,7 +64,9 @@ export default function Home() {
           comments: `${Math.floor(Math.random() * 50)}`,
           verified: true,
           live: true,
-          image: a.image || a.images?.[0]
+          image: a.image || a.images?.[0],
+          video: a.videoUrl || a.verificationVideo || "",
+          category: a.category || "Collectibles"
         }));
         const nextReels = activeAuctions;
         setReels(nextReels);
@@ -262,7 +266,20 @@ export default function Home() {
                 <div className="flex items-center justify-center h-full"><div className="w-12 h-12 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#EFD2B0", borderTopColor: "transparent" }} /></div>
               ) : reels.length > 0 ? (
                 <div className="relative w-full h-full">
-                  <Image src={currentReel.image} alt={currentReel.title} fill className="object-cover" priority />
+                  {currentReel.video ? (
+                    <video
+                      key={currentReel.id}
+                      src={currentReel.video}
+                      poster={currentReel.image}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Image src={currentReel.image} alt={currentReel.title} fill className="object-cover" priority />
+                  )}
                   <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(26, 50, 99, 0.95) 0%, rgba(84, 119, 146, 0.4) 50%, transparent 100%)" }} />
                   {currentReel.live && <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: "rgba(239, 210, 176, 0.95)" }}><span className="w-2 h-2 bg-white rounded-full animate-pulse" /><span className="text-white text-xs font-bold tracking-wider" style={{ fontFamily: "var(--font-body)" }}>LIVE</span></div>}
                   <div className="absolute bottom-0 left-0 p-6 w-full">
@@ -271,6 +288,7 @@ export default function Home() {
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-[10px] font-bold px-2 py-1 rounded tracking-wider" style={{ background: "rgba(239, 210, 176, 0.25)", color: "#EFD2B0", fontFamily: "var(--font-body)" }}>LOT {currentReel.id}</span>
                           {currentReel.verified && <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded tracking-wider" style={{ background: "linear-gradient(135deg, #EFD2B0 0%, #547792 100%)", color: "#1A3263", fontFamily: "var(--font-body)" }}><Shield className="w-3 h-3" /> VERIFIED</span>}
+                          <span className="text-[10px] font-bold px-2 py-1 rounded tracking-wider" style={{ background: "rgba(239, 210, 176, 0.12)", color: "#FFC570", fontFamily: "var(--font-body)" }}>{currentReel.category}</span>
                         </div>
                         <h3 className="text-lg md:text-xl text-white mb-1 tracking-wide" style={{ fontFamily: "var(--font-heading)", fontWeight: 500 }}>{currentReel.title}</h3>
                         <p className="text-xl md:text-2xl tracking-wider" style={{ color: "#EFD2B0", fontFamily: "var(--font-heading)", fontWeight: 500 }}>{currentReel.price}</p>
@@ -314,7 +332,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {categories.map((cat, idx) => (
               <button key={idx} type="button" onClick={() => handleCategoryClick(cat.name)} className="group relative overflow-hidden rounded-xl cursor-pointer transition-transform hover:-translate-y-1 text-left" style={{ aspectRatio: "3/4" }}>
-                <Image src={cat.image} alt={cat.name} fill className="object-cover transition-transform group-hover:scale-110" />
+                  <Image src={cat.image} alt={cat.name} fill className="object-cover transition-transform group-hover:scale-110" />
                 <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(26, 50, 99, 0.95) 0%, transparent 60%)" }} />
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-lg tracking-wider text-white" style={{ fontFamily: "var(--font-gravitas)", fontWeight: 400 }}>{cat.name}</h3>
@@ -343,7 +361,19 @@ export default function Home() {
                   className="short-card relative aspect-[9/16] rounded-2xl overflow-hidden cursor-pointer border border-white/5 bg-black"
                   onClick={() => window.location.href = `/short-view.html?id=${reel.id}`}
                 >
-                  <Image src={reel.image} alt={reel.title} fill className="object-cover opacity-80" />
+                  {reel.video ? (
+                    <video
+                      src={reel.video}
+                      poster={reel.image}
+                      muted
+                      loop
+                      playsInline
+                      autoPlay
+                      className="absolute inset-0 h-full w-full object-cover opacity-80"
+                    />
+                  ) : (
+                    <Image src={reel.image} alt={reel.title} fill className="object-cover opacity-80" />
+                  )}
                   <button
                     type="button"
                     onClick={(event) => {
@@ -432,6 +462,14 @@ const categories = [
   { name: "Art", count: "186", image: "/images/auction-products.png" },
   { name: "Vehicles", count: "42", image: "/images/product-laptop.png" },
   { name: "Fashion", count: "95", image: "/images/product-sneakers.png" },
+  { name: "Collectibles", count: "164", image: "/images/auction-hero.png" },
+  { name: "Jewellery", count: "88", image: "/images/hero-gavel.png" },
+  { name: "Real Estate", count: "28", image: "/images/sell-hero.png" },
+  { name: "Antiques", count: "73", image: "/images/logo.png" },
+  { name: "Watches", count: "61", image: "/images/auction-products.png" },
+  { name: "Books", count: "54", image: "/images/product-laptop.png" },
+  { name: "Sports Memorabilia", count: "47", image: "/images/product-sneakers.png" },
+  { name: "Music", count: "39", image: "/images/product-headphones.png" },
 ];
 
 const trustFeatures = [

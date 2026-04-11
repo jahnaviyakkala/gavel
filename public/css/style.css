@@ -66,6 +66,19 @@ body {
     background-color: var(--bg-main);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+body.page-transition-ready {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+body.page-transition-leaving {
+    opacity: 0;
+    transform: translateY(8px);
 }
 
 body.has-app-sidebar {

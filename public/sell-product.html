@@ -510,10 +510,22 @@
         });
 
         document.querySelector('input[name="video"]').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
+            const input = e.target;
+            const file = input.files[0];
+            if (!file) return;
+
+            const tempVideo = document.createElement('video');
+            tempVideo.preload = 'metadata';
+            tempVideo.onloadedmetadata = function() {
+                window.URL.revokeObjectURL(tempVideo.src);
+                if (tempVideo.duration < 7) {
+                    alert("Verification video must be at least 7 seconds long.");
+                    input.value = '';
+                    return;
+                }
                 alert("Verification video attached. Our compliance team will review the footage upon listing submission.");
-            }
+            };
+            tempVideo.src = URL.createObjectURL(file);
         });
 
         document.querySelectorAll('[data-modal-target]').forEach(function(trigger) {
